@@ -198,8 +198,7 @@ class Pattern(object):
             if el.text:
                 yield el.text
             for e in el:
-                for s in itertext(e):
-                    yield s
+                yield from itertext(e)
                 if e.tail:
                     yield e.tail
         def get_stash(m):
@@ -284,10 +283,9 @@ class DoubleTagPattern(SimpleTagPattern):
 
 class HtmlPattern(Pattern):
     """ Store raw inline html and return a placeholder. """
-    def handleMatch (self, m):
+    def handleMatch(self, m):
         rawhtml = self.unescape(m.group(2))
-        place_holder = self.markdown.htmlStash.store(rawhtml)
-        return place_holder
+        return self.markdown.htmlStash.store(rawhtml)
 
     def unescape(self, text):
         """ Return unescaped text given text with an inline placeholder. """
@@ -413,7 +411,7 @@ class ReferencePattern(LinkPattern):
 
         # Clean up linebreaks in id
         id = self.NEWLINE_CLEANUP_RE.sub(' ', id)
-        if not id in self.markdown.references: # ignore undefined refs
+        if id not in self.markdown.references: # ignore undefined refs
             return None
         href, title = self.markdown.references[id]
 

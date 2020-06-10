@@ -88,8 +88,7 @@ class AndSubstitutePostprocessor(Postprocessor):
     """ Restore valid entities """
 
     def run(self, text):
-        text =  text.replace(util.AMP_SUBSTITUTE, "&")
-        return text
+        return text.replace(util.AMP_SUBSTITUTE, "&")
 
 
 class UnescapePostprocessor(Postprocessor):

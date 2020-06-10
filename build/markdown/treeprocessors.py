@@ -234,17 +234,16 @@ class InlineProcessor(Treeprocessor):
         if node is None:
             return data, True, len(leftData)+match.span(len(match.groups()))[0]
 
-        if not isString(node):
-            if not isinstance(node.text, util.AtomicString):
-                # We need to process current node too
-                for child in [node] + node.getchildren():
-                    if not isString(node):
-                        if child.text: 
-                            child.text = self.__handleInline(child.text,
-                                                            patternIndex + 1)
-                        if child.tail:
-                            child.tail = self.__handleInline(child.tail,
-                                                            patternIndex)
+        if not isString(node) and not isinstance(node.text, util.AtomicString):
+            # We need to process current node too
+            for child in [node] + node.getchildren():
+                if not isString(node):
+                    if child.text: 
+                        child.text = self.__handleInline(child.text,
+                                                        patternIndex + 1)
+                    if child.tail:
+                        child.tail = self.__handleInline(child.tail,
+                                                        patternIndex)
 
         placeholder = self.__stashNode(node, pattern.type())
 
@@ -288,10 +287,7 @@ class InlineProcessor(Treeprocessor):
                     tail = self.__handleInline(child.tail)
                     dumby = util.etree.Element('d')
                     tailResult = self.__processPlaceholders(tail, dumby)
-                    if dumby.text:
-                        child.tail = dumby.text
-                    else:
-                        child.tail = None
+                    child.tail = dumby.text if dumby.text else None
                     pos = currElement.getchildren().index(child) + 1
                     tailResult.reverse()
                     for newChild in tailResult:
@@ -300,11 +296,14 @@ class InlineProcessor(Treeprocessor):
                     stack.append(child)
 
             for element, lst in insertQueue:
-                if self.markdown.enable_attributes:
-                    if element.text and isString(element.text):
-                        element.text = \
-                            inlinepatterns.handleAttributes(element.text, 
-                                                                    element)
+                if (
+                    self.markdown.enable_attributes
+                    and element.text
+                    and isString(element.text)
+                ):
+                    element.text = \
+                        inlinepatterns.handleAttributes(element.text, 
+                                                                element)
                 i = 0
                 for newChild in lst:
                     if self.markdown.enable_attributes:
@@ -330,13 +329,16 @@ class PrettifyTreeprocessor(Treeprocessor):
 
         i = "\n"
         if util.isBlockLevel(elem.tag) and elem.tag not in ['code', 'pre']:
-            if (not elem.text or not elem.text.strip()) \
-                    and len(elem) and util.isBlockLevel(elem[0].tag):
+            if (
+                not (elem.text and elem.text.strip())
+                and len(elem)
+                and util.isBlockLevel(elem[0].tag)
+            ):
                 elem.text = i
             for e in elem:
                 if util.isBlockLevel(e.tag):
                     self._prettifyETree(e)
-            if not elem.tail or not elem.tail.strip():
+            if not (elem.tail and elem.tail.strip()):
                 elem.tail = i
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
@@ -349,10 +351,7 @@ class PrettifyTreeprocessor(Treeprocessor):
         # inline content and missed by _prettifyETree.
         brs = root.getiterator('br')
         for br in brs:
-            if not br.tail or not br.tail.strip():
-                br.tail = '\n'
-            else:
-                br.tail = '\n%s' % br.tail
+            br.tail = '\n' if not br.tail or not br.tail.strip() else '\n%s' % br.tail
         # Clean up extra empty lines at end of code blocks.
         pres = root.getiterator('pre')
         for pre in pres:

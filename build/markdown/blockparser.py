@@ -91,9 +91,11 @@ class BlockParser:
         """
         while blocks:
             for processor in self.blockprocessors.values():
-                if processor.test(parent, blocks[0]):
-                    if processor.run(parent, blocks) is not False:
-                        # run returns True or None
-                        break
+                if (
+                    processor.test(parent, blocks[0])
+                    and processor.run(parent, blocks) is not False
+                ):
+                    # run returns True or None
+                    break
 
 

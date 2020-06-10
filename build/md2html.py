@@ -41,11 +41,11 @@ def save_utf8(filename, text):
     if is_ST3():
         f = open(filename, 'w', encoding='utf-8')
         f.write(text)
-        f.close()
     else: # 2.x
         f = open(filename, 'w')
         f.write(text.encode('utf-8'))
-        f.close()
+
+    f.close()
 
 def load_utf8(filename):
     if is_ST3():
@@ -77,9 +77,7 @@ class MarkdownCompiler():
 
     def isurl(self, css_name):
         match = re.match(r'https?://', css_name)
-        if match:
-            return True
-        return False
+        return bool(match)
 
     def get_search_path_css(self, parser):
         css_name = 'default'
@@ -156,10 +154,11 @@ class MarkdownCompiler():
         def tag_fix(match):
             tag, src = match.groups()
             filename = os.path.abspath(self.mdfile.name)
-            if filename:
-                if not src.startswith(('file://', 'https://', 'http://', '/', '#')):
-                    abs_path = u'file://%s/%s' % (os.path.dirname(filename), src)
-                    tag = tag.replace(src, abs_path)
+            if filename and not src.startswith(
+                ('file://', 'https://', 'http://', '/', '#')
+            ):
+                abs_path = u'file://%s/%s' % (os.path.dirname(filename), src)
+                tag = tag.replace(src, abs_path)
             return tag
         #RE_SOURCES = re.compile("""(?P<tag><(?:img|script|a)[^>]+(?:src|href)=["'](?P<src>[^"']+)[^>]*>)""")
         #html = RE_SOURCES.sub(tag_fix, html)
@@ -269,8 +268,7 @@ class MarkdownCompiler():
         ''' make ammendments to the body before adding it to the html'''
         from tweaks import fork
         from tweaks import analytics
-        body = fork.pre_body + body + analytics.script
-        return body
+        return fork.pre_body + body + analytics.script
 
     def get_header(self):
         '''returns header for the generated file'''

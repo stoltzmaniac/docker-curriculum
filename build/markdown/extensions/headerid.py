@@ -106,10 +106,7 @@ def unique(id, ids):
     """ Ensure id is unique in set of ids. Append '_1', '_2'... if not """
     while id in ids or not id:
         m = IDCOUNT_RE.match(id)
-        if m:
-            id = '%s_%d'% (m.group(1), int(m.group(2))+1)
-        else:
-            id = '%s_%d'% (id, 1)
+        id = '%s_%d'% (m.group(1), int(m.group(2))+1) if m else '%s_%d'% (id, 1)
     ids.add(id)
     return id
 
@@ -123,8 +120,7 @@ def itertext(elem):
     if elem.text:
         yield elem.text
     for e in elem:
-        for s in itertext(e):
-            yield s
+        yield from itertext(e)
         if e.tail:
             yield e.tail
 

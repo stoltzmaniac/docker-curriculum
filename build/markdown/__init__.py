@@ -190,7 +190,7 @@ class Markdown(object):
 
         # Setup the module name
         module_name = ext_name
-        if '.' not in ext_name:
+        if '.' not in module_name:
             module_name = '.'.join(['markdown.extensions', ext_name])
 
         # Try loading the extension first from one place, then another

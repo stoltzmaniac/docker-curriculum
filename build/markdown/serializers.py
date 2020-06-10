@@ -156,36 +156,33 @@ def _serialize_html(write, elem, qnames, namespaces, format):
                 for k, v in items:
                     if isinstance(k, QName):
                         k = k.text
-                    if isinstance(v, QName):
-                        v = qnames[v.text]
-                    else:
-                        v = _escape_attrib_html(v)
+                    v = qnames[v.text] if isinstance(v, QName) else _escape_attrib_html(v)
                     if qnames[k] == v and format == 'html':
                         # handle boolean attributes
                         write(" %s" % v)
                     else:
                         write(" %s=\"%s\"" % (qnames[k], v))
-                if namespaces:
-                    items = namespaces.items()
-                    items.sort(key=lambda x: x[1]) # sort on prefix
-                    for v, k in items:
-                        if k:
-                            k = ":" + k
-                        write(" xmlns%s=\"%s\"" % (k, _escape_attrib(v)))
+            if namespaces:
+                items = namespaces.items()
+                items.sort(key=lambda x: x[1]) # sort on prefix
+                for v, k in items:
+                    if k:
+                        k = ":" + k
+                    write(" xmlns%s=\"%s\"" % (k, _escape_attrib(v)))
             if format == "xhtml" and tag in HTML_EMPTY:
                 write(" />")
             else:
                 write(">")
                 tag = tag.lower()
                 if text:
-                    if tag == "script" or tag == "style":
+                    if tag in ["script", "style"]:
                         write(text)
                     else:
                         write(_escape_cdata(text))
                 for e in elem:
                     _serialize_html(write, e, qnames, None, format)
-                if tag not in HTML_EMPTY:
-                    write("</" + tag + ">")
+            if tag not in HTML_EMPTY:
+                write("</" + tag + ">")
     if elem.tail:
         write(_escape_cdata(elem.tail))
 

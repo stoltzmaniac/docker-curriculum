@@ -34,11 +34,11 @@ def order_toc_list(toc_list):
         
         if not remaining_list:
             return [], []
-        
+
         current = remaining_list.pop(0)
-        if not 'children' in current.keys():
+        if 'children' not in current.keys():
             current['children'] = []
-        
+
         if not prev_elements:
             # This happens for instance with [8, 1, 1], ie. when some
             # header level is outside a scope. We treat it as a
@@ -46,7 +46,7 @@ def order_toc_list(toc_list):
             next_elements, children = build_correct(remaining_list, [current])
             current['children'].append(children)
             return [current] + next_elements, []
-        
+
         prev_element = prev_elements.pop()
         children = []
         next_elements = []
@@ -58,7 +58,6 @@ def order_toc_list(toc_list):
             prev_element['children'].append(current)
             next_elements2, children2 = build_correct(remaining_list, prev_elements)
             children += children2
-            next_elements += next_elements2
         else:
             #print "%d is ancestor of %d" % (current['level'], prev_element['level'])
             if not prev_elements:
@@ -72,8 +71,7 @@ def order_toc_list(toc_list):
                 remaining_list.insert(0, current)
                 next_elements2, children2 = build_correct(remaining_list, prev_elements)
                 children.extend(children2)
-            next_elements += next_elements2
-        
+        next_elements += next_elements2
         return next_elements, children
     
     ordered_list, __ = build_correct(toc_list)
@@ -126,9 +124,9 @@ class TocTreeprocessor(Treeprocessor):
         div = etree.Element("div")
         div.attrib["class"] = "toc"
         header_rgx = re.compile("[Hh][123456]")
-        
+
         self.use_anchors = self.config["anchorlink"] in [1, '1', True, 'True', 'true']
-        
+
         # Get a list of id attributes
         used_ids = set()
         for c in doc.getiterator():
@@ -155,24 +153,24 @@ class TocTreeprocessor(Treeprocessor):
                         p[i] = div
                         break
                 marker_found = True
-                            
+
             if header_rgx.match(c.tag):
                 
-                # Do not override pre-existing ids 
-                if not "id" in c.attrib:
+                # Do not override pre-existing ids
+                if "id" not in c.attrib:
                     elem_id = unique(self.config["slugify"](text, '-'), used_ids)
                     c.attrib["id"] = elem_id
                 else:
                     elem_id = c.attrib["id"]
 
                 tag_level = int(c.tag[-1])
-                
+
                 toc_list.append({'level': tag_level,
                     'id': elem_id,
                     'name': text})
-                
+
                 self.add_anchor(c, elem_id)
-                
+
         toc_list_nested = order_toc_list(toc_list)
         self.build_toc_etree(div, toc_list_nested)
         prettify = self.markdown.treeprocessors.get('prettify')

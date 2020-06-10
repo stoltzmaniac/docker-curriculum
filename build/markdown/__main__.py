@@ -22,7 +22,7 @@ def parse_options():
     desc = "A Python implementation of John Gruber's Markdown. " \
            "http://packages.python.org/Markdown/"
     ver = "%%prog %s" % markdown.version
-    
+
     parser = optparse.OptionParser(usage=usage, description=desc, version=ver)
     parser.add_option("-f", "--file", dest="filename", default=None,
                       help="Write output to OUTPUT_FILE. Defaults to STDOUT.",
@@ -52,11 +52,7 @@ def parse_options():
 
     (options, args) = parser.parse_args()
 
-    if len(args) == 0:
-        input_file = None
-    else:
-        input_file = args[0]
-
+    input_file = None if len(args) == 0 else args[0]
     if not options.extensions:
         options.extensions = []
 

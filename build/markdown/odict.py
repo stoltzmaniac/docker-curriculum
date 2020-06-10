@@ -80,8 +80,7 @@ class OrderedDict(dict):
             yield key, self[key]
 
     def _iterkeys(self):
-        for key in self.keyOrder:
-            yield key
+        yield from self.keyOrder
 
     def _itervalues(self):
         for key in self.keyOrder:
